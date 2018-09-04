@@ -1,0 +1,69 @@
+
+<div data-class="SiteList" class="site-list"
+  bind-var-view-root="thisElem">
+  <div>
+    <div class="mini-button" bind-event-click="this.addSite()">
+      <span class="fas fa-plus"></span> Add Site
+    </div>
+  </div>
+  <table class="table" style="margin-top: .5em;">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Name</th>
+        <th>Host Name</th>
+        <th>Deploy Folder</th>
+        <th>Services</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr bind-repeater-i="#sites.length" bind-var-site="#sites[#i]">
+        <td>
+          <img class="os-icon" bind-statement-1="thisElem.src = '/img/' + #site.operatingSystem + '.png'"/>
+        </td>
+        <td>{{#site.name}}</td>
+        <td>{{#site.hostName}}</td>
+        <td>{{#site.deployFolder}}</td>
+        <td>{{#site.services.length}}</td>
+        <td>
+          <div class="mini-button" bind-event-click="$(#viewRoot).triggerHandler('select', #site)">
+            <span class="fas fa-cog"></span>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<div data-class="SiteDetails" class="site-details">
+  <div>{{#site.name}}</div>
+  <div style="margin-top: .5em;">
+    <div class="mini-button" bind-event-click="this.deployService()">
+      <span class="fas fa-plus"></span> Deploy Service
+    </div>
+  </div>
+  <table class="table service-list" style="margin-top: .5em;">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Repo URL</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr bind-repeater-i="#site.services.length" bind-var-service="#site.services[#i]">
+        <td>{{#service.name}}</td>
+        <td>{{#service.repoUrl}}</td>
+        <td>{{#service.status}}</td>
+        <td>
+          <div class="mini-button" bind-event-click="this.undeployService(#i)">
+            <span class="fas fa-times"</span>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
