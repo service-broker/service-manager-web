@@ -2,6 +2,7 @@
 function ServiceBroker(url, logger) {
   var pending = {};
   var pendingIdGen = 0;
+  var handlers = {};
   var ws = new WebSocket(url);
   var ready = new Promise(function(fulfill, reject) {
     ws.onerror = reject;
@@ -19,6 +20,9 @@ function ServiceBroker(url, logger) {
     var msg = messageFromString(e.data);
     logger.trace('<', msg.header);
     if (msg.header.type == "ServiceResponse") onServiceResponse(msg);
+    else if (msg.header.type == "ServiceRequest") onServiceRequest(msg);
+    else if (msg.header.type == "SbStatusResponse") onServiceResponse(msg);
+    else if (msg.header.error) onServiceResponse(msg);
     else logger.error("Unhandled", msg.header);
   };
 
@@ -37,7 +41,40 @@ function ServiceBroker(url, logger) {
     else logger.error("Response received but no pending request", msg.header);
   }
 
+  function onServiceRequest(msg) {
+    if (handlers[msg.header.service.name]) {
+      Promise.resolve(handlers[msg.header.service.name](msg))
+        .then(function(res) {
+          if (!res) res = {};
+          if (msg.header.id) {
+            var header = {
+              to: msg.header.from,
+              id: msg.header.id,
+              type: "ServiceResponse"
+            };
+            send(Object.assign({}, res.header, header), res.payload);
+          }
+        })
+        .catch(function(err) {
+          if (msg.header.id) {
+            send({
+              to: msg.header.from,
+              id: msg.header.id,
+              type: "ServiceResponse",
+              error: err.message
+            })
+          }
+          else logger.error(err.message, msg.header);
+        })
+    }
+    else logger.error("No handler for service " + msg.header.service.name);
+  }
+
   function request(service, req) {
+    return requestTo(null, service, req);
+  }
+
+  function requestTo(endpointId, service, req) {
     var id = ++pendingIdGen;
     var promise = new Promise(function(fulfill, reject) {
       pending[id] = {fulfill: fulfill, reject: reject};
@@ -47,17 +84,36 @@ function ServiceBroker(url, logger) {
       type: "ServiceRequest",
       service: service
     };
+    if (endpointId) header.to = endpointId;
     send(Object.assign({}, req.header, header), req.payload);
     return promise;
   }
 
   function send(header, payload) {
-    logger.trace(">", header);
-    ws.send(JSON.stringify(header) + (payload ? "\n"+payload : ""));
+    return ready.then(function() {
+      logger.trace(">", header);
+      ws.send(JSON.stringify(header) + (payload ? "\n"+payload : ""));
+    })
+  }
+
+  function setHandler(serviceName, handler) {
+    if (handlers[serviceName]) throw new Error("Handler already exists");
+    handlers[serviceName] = handler;
+  }
+
+  function getStatus() {
+    var id = ++pendingIdGen;
+    var promise = new Promise(function(fulfill, reject) {
+      pending[id] = {fulfill: fulfill, reject: reject};
+    })
+    send({id: id, type: "SbStatusRequest"});
+    return promise;
   }
 
   return {
-    ready: ready,
     request: request,
+    requestTo: requestTo,
+    setHandler: setHandler,
+    getStatus: getStatus,
   }
 }

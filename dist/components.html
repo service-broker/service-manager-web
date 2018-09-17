@@ -1,35 +1,129 @@
 
-<div data-class="SiteList" class="site-list"
+<ol data-class="Breadcrumb" class="breadcrumb"
   bind-var-view-root="thisElem">
-  <div>
-    <div class="mini-button" bind-event-click="this.addSite()">
-      <span class="fas fa-plus"></span> Add Site
+  <li class="breadcrumb-item"
+    bind-statement-1="this.show(thisElem, 'ServiceList', #currentPage)"
+    bind-event-click="$(#viewRoot).triggerHandler('navigate', 'ServiceList')">Home</li>
+  <li class="breadcrumb-item"
+    bind-statement-1="this.show(thisElem, 'Login', #currentPage)">Login</li>
+  <li class="breadcrumb-item"
+    bind-statement-1="this.show(thisElem, 'ServiceListDetails', #currentPage)"
+    bind-event-click="$(#viewRoot).triggerHandler('navigate', 'ServiceListDetails')">Service: {{#serviceName}}</li>
+  <li class="breadcrumb-item"
+    bind-statement-1="this.show(thisElem, 'SiteList', #currentPage)"
+    bind-event-click="$(#viewRoot).triggerHandler('navigate', 'SiteList')">Manage</li>
+  <li class="breadcrumb-item"
+    bind-statement-1="this.show(thisElem, 'SiteDetails', #currentPage)"
+    bind-event-click="$(#viewRoot).triggerHandler('navigate', 'SiteDetails')">Site: {{#siteName}}</li>
+  <li class="breadcrumb-item"
+    bind-statement-1="this.show(thisElem, 'ServiceDetails', #currentPage)"
+    bind-event-click="$(#viewRoot).triggerHandler('navigate', 'ServiceDetails')">Provider: {{#providerName}}</li>
+  <li class="breadcrumb-item"
+    bind-statement-1="this.show(thisElem, 'AddSite', #currentPage)">Add Site</li>
+  <li class="breadcrumb-item"
+    bind-statement-1="this.show(thisElem, 'AddService', #currentPage)">Add Provider</li>
+  <li class="breadcrumb-item"
+    bind-statement-1="this.show(thisElem, 'EditServiceConf', #currentPage)">Config</li>
+  <li class="breadcrumb-item"
+    bind-statement-1="this.show(thisElem, 'ServiceTester', #currentPage)">Service Tester</li>
+  <li class="breadcrumb-item"
+    bind-statement-1="this.show(thisElem, 'TopicSubscriptions', #currentPage)"
+    bind-event-click="$(#viewRoot).triggerHandler('navigate', 'TopicSubscriptions')">Topic Subscriptions</li>
+  <li class="breadcrumb-item"
+    bind-statement-1="this.show(thisElem, 'AddTopic', #currentPage)">Add Topic</li>
+  <li class="breadcrumb-item"
+    bind-statement-1="this.show(thisElem, 'ViewTopic', #currentPage)">{{#topicName}}</li>
+</ol>
+
+
+<div data-class="Login" class="login">
+  <form bind-event-submit="this.submit(thisElem); return false;">
+    <div class="form-group">
+      <label>Service Broker URL</label>
+      <input type="text" class="form-control" name="serviceBrokerUrl" placeholder="e.g. ws://localhost" />
     </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" class="form-control" name="password" />
+    </div>
+    <button type="submit" class="btn btn-primary">Login</button>
+  </form>
+</div>
+
+
+<div data-class="ServiceList" class="service-list"
+  bind-var-view-root="thisElem">
+  <div class="controls">
+    <button type="button" class="btn btn-primary" bind-event-click="$(#viewRoot).triggerHandler('manage')">
+      <span class="fas fa-wrench"></span> Manage
+    </button>
+    <button type="button" class="btn btn-secondary" bind-event-click="$(#viewRoot).triggerHandler('topic-subscriptions')">
+      <span class="fas fa-at"></span> Topic Subscriptions
+    </button>
   </div>
-  <table class="table" style="margin-top: .5em;">
-    <thead>
+  <table class="table">
+    <thead class="thead-dark">
       <tr>
-        <th></th>
-        <th>Name</th>
-        <th>Host Name</th>
-        <th>Deploy Folder</th>
-        <th>Services</th>
+        <th>Service</th>
+        <th>Providers</th>
         <th></th>
       </tr>
     </thead>
     <tbody>
-      <tr bind-repeater-i="#sites.length" bind-var-site="#sites[#i]">
-        <td>
-          <img class="os-icon" bind-statement-1="thisElem.src = '/img/' + #site.operatingSystem + '.png'"/>
+      <tr bind-repeater-i="#services.length" bind-var-service="#services[#i]">
+        <td style="cursor: pointer"
+          bind-event-click="$(#viewRoot).triggerHandler('select-service', #i)">{{#service.serviceName}}</td>
+        <td style="cursor: pointer"
+          bind-event-click="$(#viewRoot).triggerHandler('select-service', #i)">{{#service.providers.length}}</td>
+        <td style="width: 1%">
+          <button type="button" class="btn btn-secondary btn-sm"
+            bind-event-click="$(#viewRoot).triggerHandler('test-service', {serviceName: #service.serviceName})">
+            <span class="fas fa-angle-right"></span> Test
+          </button>
         </td>
-        <td>{{#site.name}}</td>
-        <td>{{#site.hostName}}</td>
-        <td>{{#site.deployFolder}}</td>
-        <td>{{#site.services.length}}</td>
-        <td>
-          <div class="mini-button" bind-event-click="$(#viewRoot).triggerHandler('select', #site)">
-            <span class="fas fa-cog"></span>
-          </div>
+      </tr>
+    </tbody>
+  </table>
+  <table class="table">
+    <thead class="thead-dark">
+      <tr>
+        <th>Topic</th>
+        <th>Subscribers</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr bind-repeater-i="#topics.length" bind-var-topic="#topics[#i]">
+        <td>{{#topic.topicName}}</td>
+        <td>{{#topic.subscribers.map(function(x) {return x.endpointId}).join(", ")}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<div data-class="ServiceListDetails" class="service-list-details"
+  bind-var-view-root="thisElem">
+  <table class="table">
+    <thead class="thead-dark">
+      <tr>
+        <th>Endpoint ID</th>
+        <th>Capabilities</th>
+        <th>Priority</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr bind-repeater-i="#service.providers.length" bind-var-provider="#service.providers[#i]">
+        <td valign="top">{{#provider.endpointId}}</td>
+        <td valign="top">
+          <div bind-repeater-j="#provider.capabilities.length">{{#provider.capabilities[#j]}}</div>
+        </td>
+        <td valign="top">{{#provider.priority}}</td>
+        <td valign="top" style="width: 1%">
+          <button type="button" class="btn btn-secondary btn-sm"
+            bind-event-click="$(#viewRoot).triggerHandler('test-service', {serviceName: #service.serviceName, endpointId: #provider.endpointId})">
+            <span class="fas fa-angle-right"></span> Test
+          </button>
         </td>
       </tr>
     </tbody>
@@ -37,15 +131,58 @@
 </div>
 
 
-<div data-class="SiteDetails" class="site-details">
-  <div>{{#site.name}}</div>
-  <div style="margin-top: .5em;">
-    <div class="mini-button" bind-event-click="this.deployService()">
-      <span class="fas fa-plus"></span> Deploy Service
-    </div>
+<div data-class="SiteList" class="site-list"
+  bind-var-view-root="thisElem">
+  <div class="controls">
+    <button type="button" class="btn btn-secondary" bind-event-click="$(#viewRoot).triggerHandler('add-site')">
+      <span class="fas fa-plus"></span> Add Site
+    </button>
   </div>
-  <table class="table service-list" style="margin-top: .5em;">
-    <thead>
+  <table class="table">
+    <thead class="thead-dark">
+      <tr>
+        <th></th>
+        <th>Name</th>
+        <th>Host Name</th>
+        <th>Deploy Folder</th>
+        <th>Providers</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="cursor: pointer;"
+        bind-repeater-i="#siteNames.length" bind-var-site="#sites[#siteNames[#i]]"
+        bind-event-click="$(#viewRoot).triggerHandler('select-site', #siteNames[#i])">
+        <td>
+          <img class="os-icon" bind-statement-1="thisElem.src = 'img/' + #site.operatingSystem + '.png'"/>
+        </td>
+        <td>{{#site.siteName}}</td>
+        <td>{{#site.hostName}}</td>
+        <td>{{#site.deployFolder}}</td>
+        <td>{{#site.serviceNames.length}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<div data-class="SiteDetails" class="site-details"
+  bind-var-view-root="thisElem">
+  <div class="controls">
+    <button type="button" class="btn btn-secondary" bind-event-click="$(#viewRoot).triggerHandler('deploy-service')">
+      <span class="fas fa-plus"></span> Deploy Provider
+    </button>
+    <button type="button" class="btn btn-secondary" bind-event-click="$(#viewRoot).triggerHandler('remove-site')">
+      <span class="fas fa-trash-alt"></span> Remove Site
+    </button>
+  </div>
+  <div bind-view="CommandOutput"
+    bind-param-tabs="[{title:'stdout', content:#commandOutput.stdout}, {title:'stderr', content:#commandOutput.stderr}]"
+    bind-param-theme="'success'"
+    bind-statement-1="$(thisElem).toggle(#commandOutput != null)">
+  </div>
+  <table class="table service-list">
+    <thead class="thead-dark">
       <tr>
         <th>Name</th>
         <th>Repo URL</th>
@@ -54,16 +191,268 @@
       </tr>
     </thead>
     <tbody>
-      <tr bind-repeater-i="#site.services.length" bind-var-service="#site.services[#i]">
-        <td>{{#service.name}}</td>
+      <tr style="cursor: pointer;"
+        bind-repeater-i="#site.serviceNames.length"
+        bind-var-service="#site.services[#site.serviceNames[#i]]"
+        bind-event-click="$(#viewRoot).triggerHandler('select-service', #site.serviceNames[#i])">
+        <td>{{#service.serviceName}}</td>
         <td>{{#service.repoUrl}}</td>
         <td>{{#service.status}}</td>
-        <td>
-          <div class="mini-button" bind-event-click="this.undeployService(#i)">
-            <span class="fas fa-times"</span>
-          </div>
-        </td>
       </tr>
     </tbody>
   </table>
+</div>
+
+
+<div data-class="ServiceDetails" class="service-details"
+  bind-var-view-root="thisElem">
+  <div class="status" bind-var-server-time="Date.now()+#serverTimeOffset">
+    <span style="cursor: pointer"
+      bind-event-click="$(#viewRoot).triggerHandler('change-service-status')">{{#service.status}}</span>
+    <span class="text-secondary"
+      bind-statement-1="$(thisElem).toggle(#service.pid != null)">| {{#service.pid}}</span>
+    <span class="text-secondary"
+      bind-statement-1="$(thisElem).toggle(#service.endpointId != null)">| {{#service.endpointId}}</span>
+    <span class="text-secondary"
+      bind-statement-1="$(thisElem).toggle(#service.lastCheckedIn != null)">|
+      <span bind-statement-1="$(thisElem).toggleClass('text-danger', #service.lastCheckedIn < #serverTime-60*1000)">
+        Last checked in {{this.printDuration(#serverTime-#service.lastCheckedIn)}}</span></span>
+  </div>
+  <div class="controls">
+    <button type="button" class="btn btn-secondary"
+      bind-statement-1="$(thisElem).toggle(#service.status == 'STOPPED')"
+      bind-event-click="$(#viewRoot).triggerHandler('start-service')">
+      <span class="fas fa-play"></span> Start
+    </button>
+    <button type="button" class="btn btn-secondary"
+      bind-statement-1="$(thisElem).toggle(#service.status == 'STARTED')"
+      bind-event-click="$(#viewRoot).triggerHandler('stop-service')">
+      <span class="fas fa-stop"></span> Stop
+    </button>
+    <button type="button" class="btn btn-secondary"
+      bind-statement-1="$(thisElem).toggle(#service.status == 'STARTED' || #service.status == 'STOPPING')"
+      bind-event-click="$(#viewRoot).triggerHandler('kill-service')">
+      <span class="fas fa-skull"></span> Kill
+    </button>
+    <button type="button" class="btn btn-secondary"
+      bind-event-click="$(#viewRoot).triggerHandler('edit-service-conf')">
+      <span class="fas fa-wrench"></span> Config
+    </button>
+    <button type="button" class="btn btn-secondary"
+      bind-event-click="$(#viewRoot).triggerHandler('update-service')">
+      <span class="fas fa-sync-alt"></span> Update
+    </button>
+    <button type="button" class="btn btn-secondary"
+      bind-statement-1="$(thisElem).toggle(#service.status == 'STOPPED')"
+      bind-event-click="$(#viewRoot).triggerHandler('undeploy-service')">
+      <span class="fas fa-trash-alt"></span> Undeploy
+    </button>
+  </div>
+  <div bind-view="CommandOutput"
+    bind-param-tabs="[{title:'stdout', content:#commandOutput.stdout}, {title:'stderr', content:#commandOutput.stderr}]"
+    bind-param-theme="'success'"
+    bind-statement-1="$(thisElem).toggle(#commandOutput != null)">
+  </div>
+  <div bind-view="CommandOutput"
+    bind-param-tabs="[{title:'stdout', content:#serviceOutput.stdout}, {title:'stderr', content:#serviceOutput.stderr}]">
+  </div>
+  <div class="controls">
+    <button type="button" class="btn" bind-event-click="$(#viewRoot).triggerHandler('view-logs')">
+      <span class="fas fa-redo-alt"></span> Refresh
+    </button>
+  </div>
+</div>
+
+
+<div data-class="AddSite" class="add-site">
+  <form bind-event-submit="this.submit(thisElem); return false;">
+    <div class="form-group">
+      <label>Name</label>
+      <input type="text" class="form-control" name="siteName"/>
+    </div>
+    <div class="form-group">
+      <label>Host Name</label>
+      <input type="text" class="form-control" name="hostName"/>
+    </div>
+    <div class="form-group">
+      <label>Deploy Folder</label>
+      <input type="text" class="form-control" name="deployFolder"/>
+    </div>
+    <div class="form-group">
+      <label>Service Broker URL</label>
+      <input type="text" class="form-control" name="serviceBrokerUrl"/>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="button" class="btn" bind-event-click="this.cancel()">Cancel</button>
+  </form>
+</div>
+
+
+<div data-class="DeployService" class="deploy-service">
+  <form bind-event-submit="this.submit(thisElem); return false;">
+    <div class="form-group">
+      <label>Name</label>
+      <input type="text" class="form-control" name="serviceName"/>
+    </div>
+    <div class="form-group">
+      <label>Repo URL</label>
+      <input type="text" class="form-control" name="repoUrl"/>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="button" class="btn" bind-event-click="this.cancel()">Cancel</button>
+  </form>
+</div>
+
+
+<div data-class="EditServiceConf" class="edit-service-conf">
+  <form bind-event-submit="this.submit(thisElem); return false;">
+    <table cellpadding="5" style="width: 100%;">
+      <tr bind-repeater-i="#serviceConf.length" bind-var-entry="#serviceConf[#i]">
+        <td>
+          <input type="text" class="form-control"
+            bind-statement-1="thisElem.value=#entry[0]"
+            bind-event-change="#entry[0]=thisElem.value"/>
+        </td>
+        <td>
+          <input type="text" class="form-control"
+            bind-statement-1="thisElem.value=#entry[1]"
+            bind-event-change="#entry[1]=thisElem.value"/>
+        </td>
+        <td style="text-align: right;">
+          <button type="button" class="btn" bind-event-click="#serviceConf.splice(#i,1)">
+            <span class="fas fa-times"></span>
+          </button>
+        </td>
+      </tr>
+      <tr>
+        <td style="width: 30%;">
+        </td>
+        <td></td>
+        <td style="width: 1%; text-align: right;">
+          <button type="button" class="btn" bind-event-click="#serviceConf.push(['',''])">
+            <span class="fas fa-plus"></span>
+          </button>
+        </td>
+      </tr>
+    </table>
+    <div>
+      <button type="submit" class="btn btn-primary">Submit</button>
+      <button type="button" class="btn" bind-event-click="this.cancel()">Cancel</button>
+    </div>
+  </form>
+</div>
+
+
+<div data-class="ServiceTester" class="service-tester">
+  <div bind-view="CommandOutput"
+    bind-param-tabs="[{title:'Header', content:JSON.stringify(#response.header,null,2)}, {title:'Payload', content:#response.payload}]"
+    bind-param-theme="'success'"
+    bind-statement-1="$(thisElem).toggle(#response != null)">
+  </div>
+  <form bind-event-submit="this.submit(thisElem); return false;">
+    <div class="form-group" bind-statement-1="$(thisElem).toggle(!!#endpointId)">
+      <label>Provider</label>
+      <input type="text" class="form-control" name="endpointId"
+        bind-statement-1="thisElem.value = #endpointId || ''" />
+    </div>
+    <div class="form-group">
+      <label>Service</label>
+      <input type="text" class="form-control" name="serviceName"
+        bind-statement-1="thisElem.value = #serviceName" />
+    </div>
+    <div class="form-group" bind-statement-1="$(thisElem).toggle(!#endpointId)">
+      <label>Required capabilities</label>
+      <input type="text" class="form-control" name="capabilities" placeholder="(JSON array)"/>
+    </div>
+    <div class="form-group">
+      <label>Header fields</label>
+      <textarea class="form-control" name="header" rows="3" placeholder="(JSON object)"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Payload</label>
+      <textarea class="form-control" name="payload" rows="3" placeholder="(string)"></textarea>
+    </div>
+    <div>
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+  </form>
+</div>
+
+
+<div data-class="TopicSubscriptions" class="topic-subscriptions"
+  bind-var-view-root="thisElem">
+  <div class="controls">
+    <button type="button" class="btn btn-secondary" bind-event-click="$(#viewRoot).triggerHandler('add-topic')">
+      <span class="fas fa-plus"></span> Add Topic
+    </button>
+  </div>
+  <table class="table topic-list">
+    <thead class="thead-dark">
+      <tr>
+        <th>Topic Name</th>
+        <th>History Size</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="cursor: pointer;"
+        bind-repeater-i="#topicNames.length"
+        bind-var-topic="#topics[#topicNames[#i]]"
+        bind-event-click="$(#viewRoot).triggerHandler('select-topic', #topicNames[#i])">
+        <td>{{#topic.topicName}}</td>
+        <td>{{#topic.historySize}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<div data-class="AddTopic" class="add-topic">
+  <form bind-event-submit="this.submit(thisElem); return false;">
+    <div class="form-group">
+      <label>Topic Name</label>
+      <input type="text" class="form-control" name="topicName"/>
+    </div>
+    <div class="form-group">
+      <label>History Size</label>
+      <input type="text" class="form-control" name="historySize"/>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="button" class="btn" bind-event-click="this.cancel()">Cancel</button>
+  </form>
+</div>
+
+
+<div data-class="ViewTopic" class="view-topic card">
+  <div class="card-body" bind-statement-1="#topicHistory.length; thisElem.scrollTop=thisElem.scrollHeight;">
+    <p class="card-text" bind-repeater-i="#topicHistory.length">{{#topicHistory[#i]}}</p>
+  </div>
+</div>
+
+
+<div data-class="ModalSpinner" class="modal-spinner">
+  <div class="overlay"></div>
+  <div class="spinner-holder">
+    <div class="spinner"></div>
+  </div>
+</div>
+
+
+<div data-class="CommandOutput" class="command-output card"
+  bind-var-selector="0"
+  bind-statement-1="if (#theme) $(thisElem).addClass('border-' + #theme)">
+  <div class="card-header">
+    <ul class="nav nav-tabs card-header-tabs">
+      <li class="nav-item" bind-repeater-i="#tabs.length">
+        <a class="nav-link" href="#"
+          bind-statement-1="$(thisElem).toggleClass('active', #selector==#i)"
+          bind-event-click="#selector=#i">{{#tabs[#i].title}}</a>
+      </li>
+    </ul>
+  </div>
+  <div class="card-body"
+    bind-repeater-i="#tabs.length"
+    bind-statement-1="$(thisElem).toggle(#selector==#i)"
+    bind-statement-2="#tabs[#i].content; thisElem.scrollTop=thisElem.scrollHeight;">
+    <pre class="card-text">{{#tabs[#i].content}}</pre>
+  </div>
 </div>

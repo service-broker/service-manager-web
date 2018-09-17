@@ -12,42 +12,113 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-  <script src="js/service-broker.js"></script>
+  <script src="js/fast-json-patch.js"></script>
   <script src="js/databind.js"></script>
+  <script src="js/service-broker.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/components.js"></script>
-  <script>
-    var sb = new ServiceBroker("ws://app-admin.diepkhuc.com:30300", logger);
-
-    $("<div>").load("components.html", function() {
-      $(this).children().each(function() {
-        var className = $(this).data("class");
-        if (!className || !window[className]) throw new Error("Missing class " + className);
-        dataBinder.views[className] = {template: this, controller: window[className]};
-      })
-    })
-  </script>
-  <script>
-    state = {
-      page: "SiteList"
-    };
-
-    function openSite(site) {
-      state.page = "SiteDetails";
-      state.site = site;
-    }
-
-  </script>
+  <script src="js/index.js"></script>
 </head>
-<body>
+<body bind-statement-1="#state.page; #state.error=null; #state.commandOutput=null;"
+  bind-statement-3="this.subscribeTopic(#state.page == 'ViewTopic')"
+  bind-statement-4="if (#state.page == 'ServiceList') loadServiceList()">
   <div class="container">
+    <div class="alert alert-danger"
+      bind-statement-1="$(thisElem).toggle(#state.error != null)">{{#state.error.message}}</div>
+    <nav>
+      <div bind-view="Breadcrumb"
+        bind-param-current-page="#state.page"
+        bind-param-service-name="#state.serviceList.services[#state.serviceList.selectedIndex].serviceName"
+        bind-param-site-name="#state.siteName"
+        bind-param-provider-name="#state.serviceName"
+        bind-param-topic-name="#state.topicName"
+        bind-event-navigate="#state.page = event.data"></div>
+    </nav>
+    <div bind-view="Login"
+      bind-statement-1="$(thisElem).toggle(#state.page=='Login')"
+      bind-event-submit="this.login(event.data)"></div>
+    <div bind-view="ServiceList"
+      bind-param-services="#state.serviceList.services"
+      bind-param-topics="#state.serviceList.topics"
+      bind-statement-1="$(thisElem).toggle(#state.page=='ServiceList')"
+      bind-event-manage="#state.page='SiteList'"
+      bind-event-select-service="#state.page='ServiceListDetails'; #state.serviceList.selectedIndex=event.data;"
+      bind-event-test-service="this.openServiceTester(event.data)"
+      bind-event-topic-subscriptions="#state.page='TopicSubscriptions'"
+      bind-event-refresh="this.loadServiceList()"></div>
+    <div bind-view="ServiceListDetails"
+      bind-param-service="#state.serviceList.services[#state.serviceList.selectedIndex]"
+      bind-statement-1="$(thisElem).toggle(#state.page=='ServiceListDetails')"
+      bind-event-test-service="this.openServiceTester(event.data)"></div>
     <div bind-view="SiteList"
-      bind-statement-1="$(thisElem).toggle(#state.page == 'SiteList')"
-      bind-event-select="this.openSite(event.data)"></div>
+      bind-param-site-names="#state.siteNames"
+      bind-param-sites="#state.sites"
+      bind-statement-1="$(thisElem).toggle(#state.page=='SiteList')"
+      bind-event-add-site="#state.page='AddSite'"
+      bind-event-select-site="#state.page='SiteDetails'; #state.siteName=event.data;"></div>
     <div bind-view="SiteDetails"
-      bind-param-site="#state.site"
-      bind-statement-1="$(thisElem).toggle(#state.page == 'SiteDetails')"
-      ></div>
+      bind-param-site="#state.sites[#state.siteName]"
+      bind-param-command-output="#state.commandOutput"
+      bind-statement-1="$(thisElem).toggle(#state.page=='SiteDetails')"
+      bind-event-deploy-service="#state.page='DeployService'"
+      bind-event-select-service="#state.page='ServiceDetails'; #state.serviceName=event.data;"
+      bind-event-remove-site="if (confirm('Are you sure?')) this.removeSite()"></div>
+    <div bind-view="ServiceDetails"
+      bind-param-service="#state.sites[#state.siteName].services[#state.serviceName]"
+      bind-param-command-output="#state.commandOutput"
+      bind-param-service-output="#state.serviceOutput"
+      bind-param-server-time-offset="#state.serverTimeOffset"
+      bind-statement-1="$(thisElem).toggle(#state.page=='ServiceDetails')"
+      bind-event-start-service="this.startService()"
+      bind-event-stop-service="this.stopService()"
+      bind-event-kill-service="this.killService()"
+      bind-event-change-service-status="this.changeServiceStatus()"
+      bind-event-update-service="this.updateService()"
+      bind-event-edit-service-conf="this.editServiceConf()"
+      bind-event-view-logs="this.viewServiceLogs()"
+      bind-event-undeploy-service="if (confirm('Are you sure?')) this.undeployService()"></div>
+    <div bind-view="AddSite"
+      bind-statement-1="$(thisElem).toggle(#state.page=='AddSite')"
+      bind-event-submit="this.addSite(event.data)"
+      bind-event-error="#state.error=event.data"
+      bind-event-cancel="#state.page='SiteList'"></div>
+    <div bind-view="DeployService"
+      bind-statement-1="$(thisElem).toggle(#state.page=='DeployService')"
+      bind-event-submit="this.deployService(event.data)"
+      bind-event-error="#state.error=event.data"
+      bind-event-cancel="#state.page='SiteDetails'"></div>
+    <div bind-view="EditServiceConf"
+      bind-param-service-conf="#state.serviceConf"
+      bind-statement-1="$(thisElem).toggle(#state.page=='EditServiceConf')"
+      bind-event-submit="this.updateServiceConf(event.data)"
+      bind-event-error="#state.error=event.data"
+      bind-event-cancel="#state.page='ServiceDetails'"></div>
+    <div bind-view="ServiceTester"
+      bind-param-endpoint-id="#state.serviceTester.endpointId"
+      bind-param-service-name="#state.serviceTester.serviceName"
+      bind-param-response="#state.serviceTester.response"
+      bind-statement-1="$(thisElem).toggle(#state.page=='ServiceTester')"
+      bind-event-submit="this.serviceTest(event.data)"
+      bind-event-error="#state.error=event.data"
+      bind-event-cancel="#state.page='ServiceList'"></div>
+    <div bind-view="TopicSubscriptions"
+      bind-param-topics="#state.topics"
+      bind-param-topic-names="#state.topicNames"
+      bind-statement-1="$(thisElem).toggle(#state.page=='TopicSubscriptions')"
+      bind-event-add-topic="#state.page='AddTopic'"
+      bind-event-select-topic="#state.page='ViewTopic'; #state.topicName=event.data;"
+      bind-event-cancel="#state.page='ServiceList'"></div>
+    <div bind-view="AddTopic"
+      bind-statement-1="$(thisElem).toggle(#state.page=='AddTopic')"
+      bind-event-submit="this.addTopic(event.data)"
+      bind-event-error="#state.error=event.data"
+      bind-event-cancel="#state.page='TopicSubscriptions'"></div>
+    <div bind-view="ViewTopic"
+      bind-param-topic-history="#state.topicHistory"
+      bind-statement-1="$(thisElem).toggle(#state.page=='ViewTopic')"
+      bind-event-cancel="#state.page='TopicSubscriptions'"></div>
+    <div bind-view="ModalSpinner"
+      bind-statement-1="$(thisElem).toggle(!!#state.progress)"></div>
   </div>
 </body>
 </html>
