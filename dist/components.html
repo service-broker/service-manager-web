@@ -391,15 +391,21 @@
       <tr>
         <th>Topic Name</th>
         <th>History Size</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
       <tr style="cursor: pointer;"
         bind-repeater-i="#topicNames.length"
-        bind-var-topic="#topics[#topicNames[#i]]"
-        bind-event-click="$(#viewRoot).triggerHandler('select-topic', #topicNames[#i])">
-        <td>{{#topic.topicName}}</td>
-        <td>{{#topic.historySize}}</td>
+        bind-var-topic="#topics[#topicNames[#i]]">
+        <td bind-event-click="$(#viewRoot).triggerHandler('select-topic', #topicNames[#i])">{{#topic.topicName}}</td>
+        <td bind-event-click="$(#viewRoot).triggerHandler('select-topic', #topicNames[#i])">{{#topic.historySize}}</td>
+        <td style="width: 1%">
+          <button type="button" class="btn btn-secondary"
+            bind-event-click="$(#viewRoot).triggerHandler('remove-topic', #topicNames[#i])">
+            <span class="fas fa-times"></span>
+          </button>
+        </td>
       </tr>
     </tbody>
   </table>

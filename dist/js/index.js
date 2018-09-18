@@ -227,6 +227,10 @@ function addTopic(topicInfo) {
   })
 }
 
+function removeTopic(topicName) {
+  request("removeTopic", {topicName: topicName});
+}
+
 function subscribeTopic(enable) {
   if (enable) {
     state.topicHistory = [];

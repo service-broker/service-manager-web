@@ -107,6 +107,7 @@
       bind-statement-1="$(thisElem).toggle(#state.page=='TopicSubscriptions')"
       bind-event-add-topic="#state.page='AddTopic'"
       bind-event-select-topic="#state.page='ViewTopic'; #state.topicName=event.data;"
+      bind-event-remove-topic="this.removeTopic(event.data)"
       bind-event-cancel="#state.page='ServiceList'"></div>
     <div bind-view="AddTopic"
       bind-statement-1="$(thisElem).toggle(#state.page=='AddTopic')"
