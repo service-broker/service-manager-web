@@ -2,7 +2,7 @@
 function ServiceBroker(url, logger) {
   var pending = {};
   var pendingIdGen = 0;
-  var handlers = {};
+  var providers = {};
   var ws = new WebSocket(url);
   var ready = new Promise(function(fulfill, reject) {
     ws.onerror = reject;
@@ -42,8 +42,8 @@ function ServiceBroker(url, logger) {
   }
 
   function onServiceRequest(msg) {
-    if (handlers[msg.header.service.name]) {
-      Promise.resolve(handlers[msg.header.service.name](msg))
+    if (providers[msg.header.service.name]) {
+      Promise.resolve(providers[msg.header.service.name].handler(msg))
         .then(function(res) {
           if (!res) res = {};
           if (msg.header.id) {
@@ -70,11 +70,13 @@ function ServiceBroker(url, logger) {
     else logger.error("No handler for service " + msg.header.service.name);
   }
 
+
+
   function request(service, req) {
     return requestTo(null, service, req);
   }
 
-  function requestTo(endpointId, service, req) {
+  function requestTo(endpointId, serviceName, req) {
     var id = ++pendingIdGen;
     var promise = new Promise(function(fulfill, reject) {
       pending[id] = {fulfill: fulfill, reject: reject};
@@ -82,7 +84,7 @@ function ServiceBroker(url, logger) {
     var header = {
       id: id,
       type: "ServiceRequest",
-      service: service
+      service: {name: serviceName}
     };
     if (endpointId) header.to = endpointId;
     send(Object.assign({}, req.header, header), req.payload);
@@ -96,9 +98,38 @@ function ServiceBroker(url, logger) {
     })
   }
 
+
+
+  function advertise(service, handler) {
+    if (providers[service.name]) throw new Error(service.name + " provider already exists");
+    providers[service.name] = {
+      advertisedService: service,
+      handler: handler
+    }
+    return send({
+      type: "SbAdvertiseRequest",
+      services: Object.keys(providers)
+        .map(function(x) {return providers[x].advertisedService})
+        .filter(function(x) {return x})
+    })
+  }
+  
+  function unadvertise(serviceName) {
+    if (!providers[serviceName]) throw new Error(serviceName + " provider not exists");
+    delete providers[serviceName];
+    return send({
+      type: "SbAdvertiseRequest",
+      services: Object.keys(providers)
+        .map(function(x) {return providers[x].advertisedService})
+        .filter(function(x) {return x})
+    })
+  }
+
   function setHandler(serviceName, handler) {
-    if (handlers[serviceName]) throw new Error("Handler already exists");
-    handlers[serviceName] = handler;
+    if (providers[serviceName]) throw new Error("Handler already exists");
+    providers[serviceName] = {
+      handler: handler
+    }
   }
 
   function getStatus() {
@@ -110,10 +141,36 @@ function ServiceBroker(url, logger) {
     return promise;
   }
 
+
+
+  function publish(topic, text) {
+    return send({
+      type: "ServiceRequest",
+      service: {name: "#"+topic}
+    },
+    text);
+  }
+  
+  function subscribe(topic, handler) {
+    return advertise({name: "#"+topic}, function(msg) {
+      handler(msg.payload);
+      return null;
+    })
+  }
+  
+  function unsubscribe(topic) {
+    return unadvertise("#"+topic);
+  }
+
   return {
     request: request,
     requestTo: requestTo,
+    advertise: advertise,
+    unadvertise: unadvertise,
     setHandler: setHandler,
     getStatus: getStatus,
+    publish: publish,
+    subscribe: subscribe,
+    unsubscribe: unsubscribe,
   }
 }
