@@ -10,6 +10,10 @@ state = {
   topicHistory: null,
   serverTimeOffset: 0,
 };
+var topicTransform = {
+  filter: function() {return true},
+  transform: function(message) {return message}
+};
 
 loadComponents();
 
@@ -111,7 +115,7 @@ function onStateUpdate(patches) {
 }
 
 function onTopicMessage(payload) {
-  state.topicHistory.push(payload);
+  if (topicTransform.filter(payload)) state.topicHistory.push(topicTransform.transform(payload));
 }
 
 
@@ -235,7 +239,7 @@ function subscribeTopic(enable) {
   if (enable) {
     state.topicHistory = [];
     request("subscribeTopic", {topicName: state.topicName}, function(res) {
-      state.topicHistory = JSON.parse(res.payload);
+      state.topicHistory = JSON.parse(res.payload).filter(topicTransform.filter).map(topicTransform.transform);
     })
   }
   else if (state.topicHistory) {
