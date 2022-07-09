@@ -94,7 +94,8 @@ function DeployService(viewRoot) {
     try {
       $(viewRoot).triggerHandler('submit', {
         serviceName: form.elements.serviceName.value.trim(),
-        repoUrl: form.elements.repoUrl.value.trim()
+        repoUrl: form.elements.repoUrl.value.trim(),
+        repoTag: form.elements.repoTag.value.trim() || undefined,
       })
     }
     catch (err) {
