@@ -24,17 +24,44 @@ function Breadcrumb() {
 
 
 function Login(viewRoot) {
+  this.history = {
+    items: JSON.parse(localStorage.getItem("login.history") || "[]"),
+    visible: false,
+    add: function(url) {
+      if (!this.items.some(function(item) {return item.url == url})) {
+        this.items.push({url: url})
+        this.save()
+      }
+    },
+    select: function(index) {
+      var form = $(viewRoot).find("form").get(0)
+      form.serviceBrokerUrl.value = this.items[index].url
+      setTimeout(function() {
+        $(form.password).focus()
+      }, 100)
+      this.visible = false
+    },
+    save: function() {
+      localStorage.setItem("login.history", JSON.stringify(this.items))
+    }
+  }
   this.submit = function(form) {
     try {
+      var url = form.elements.serviceBrokerUrl.value.trim()
       $(viewRoot).triggerHandler('submit', {
-        serviceBrokerUrl: form.elements.serviceBrokerUrl.value.trim(),
+        serviceBrokerUrl: url,
         password: form.elements.password.value.trim()
       })
+      this.history.add(url)
     }
     catch (err) {
       $(viewRoot).triggerHandler('error', err);
     }
   }
+}
+
+
+function LoginHistoryDialog() {
 }
 
 

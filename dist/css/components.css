@@ -1,4 +1,13 @@
 
+.link {
+  color: blue;
+  cursor: pointer;
+}
+.link:hover {
+  text-decoration: underline;
+}
+
+
 .breadcrumb .breadcrumb-item:not(.active) {
   cursor: pointer;
 }

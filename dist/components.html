@@ -40,7 +40,14 @@
   <form bind-event-submit="this.submit(thisElem); return false;">
     <div class="form-group">
       <label>Service Broker URL</label>
-      <input type="text" class="form-control" name="serviceBrokerUrl" placeholder="e.g. ws://localhost" />
+      <div class="input-group">
+        <input type="text" class="form-control" name="serviceBrokerUrl" placeholder="e.g. ws://localhost" />
+        <div class="input-group-append" bind-repeater-if="#history.items.length ? 1 : 0">
+          <button type="button" class="btn btn-secondary" tabindex="-1" bind-event-click="#history.visible = true">
+            <span class="fas fa-list"></span>
+          </button>
+        </div>
+      </div>
     </div>
     <div class="form-group">
       <label>Password</label>
@@ -48,6 +55,55 @@
     </div>
     <button type="submit" class="btn btn-primary">Login</button>
   </form>
+  <div bind-view="LoginHistoryDialog"
+    bind-param-visible="#history.visible"
+    bind-param-items="#history.items"
+    bind-event-select-index="this.history.select(event.data)"
+    bind-event-save-history="this.history.save()"></div>
+</div>
+
+
+<div data-class="LoginHistoryDialog" class="modal" tabindex="-1" role="dialog"
+  bind-var-view-root="thisElem"
+  bind-statement-1="$(thisElem).modal(#visible ? 'show' : 'hide')"
+  bind-event-hidden.bs.modal="#visible = false">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">History</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" bind-var-edit-index="null">
+        <form bind-event-submit="this.items[#editIndex].name = thisElem.name.value; $(#viewRoot).triggerHandler('save-history'); #editIndex = null; return false">
+          <table class="table table-sm table-borderless">
+            <tr bind-repeater-i="#items.length" bind-var-item="#items[#i]">
+              <td>
+                <span class="link"
+                  bind-statement-1="$(thisElem).toggle(#editIndex != #i)"
+                  bind-event-click="$(#viewRoot).triggerHandler('select-index', #i)">{{#item.name || #item.url}}</span>
+                <input type="text" class="form-control" name="name"
+                  bind-repeater-if="#editIndex == #i ? 1 : 0"
+                  bind-statement-1="thisElem.value = #item.name || ''">
+              </td>
+              <td class="text-right" style="width: 1%; white-space: nowrap;">
+                <div bind-statement-1="$(thisElem).toggle(#editIndex != #i)">
+                  <i class="fas fa-pen mr-1" style="cursor: pointer;"
+                    bind-event-click="#editIndex = #i"></i>
+                  <i class="fas fa-trash-alt" style="cursor: pointer;"
+                    bind-event-click="this.items.splice(#i, 1); $(#viewRoot).triggerHandler('save-history')"></i>
+                </div>
+                <button type="submit" class="btn btn-primary" bind-repeater-if="#editIndex == #i">
+                  <span class="fas fa-check"></span> Save
+                </button>
+              </td>
+            </tr>
+          </table>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 
 
