@@ -52,14 +52,20 @@ function loadServiceList() {
             providers: entry.providers
           }
         })
-      state.serviceList.topics = result.providerRegistry
-        .filter(function(entry) {return entry.service.startsWith("#")})
-        .map(function(entry) {
-          return {
-            topicName: entry.service.slice(1),
-            subscribers: entry.providers
-          }
-        })
+      if (result.subscriberRegistry) {
+        result.subscriberRegistry.sort((a, b) => a.topic.localeCompare(b.topic))
+        state.serviceList.topics = result.subscriberRegistry
+          .map(({topic, subscribers}) => ({topicName: topic.slice(1), subscribers}))
+      } else {
+        state.serviceList.topics = result.providerRegistry
+          .filter(function(entry) {return entry.service.startsWith("#")})
+          .map(function(entry) {
+            return {
+              topicName: entry.service.slice(1),
+              subscribers: entry.providers
+            }
+          })
+      }
     })
     .catch(function(err) {state.error = err})
     .finally(function() {state.progress--})
