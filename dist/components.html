@@ -41,7 +41,7 @@
     <div class="form-group">
       <label>Service Broker URL</label>
       <div class="input-group">
-        <input type="text" class="form-control" name="serviceBrokerUrl" placeholder="e.g. ws://localhost" />
+        <input type="text" class="form-control" name="serviceBrokerUrl" placeholder="e.g. ws://localhost" required>
         <div class="input-group-append" bind-repeater-if="#history.items.length ? 1 : 0">
           <button type="button" class="btn btn-secondary" tabindex="-1" bind-event-click="#history.visible = true">
             <span class="fas fa-list"></span>
@@ -109,7 +109,7 @@
 
 <div data-class="ServiceList" class="service-list"
   bind-var-view-root="thisElem">
-  <div class="controls">
+  <div class="controls" bind-repeater-if="#canManage ? 1 : 0">
     <button type="button" class="btn btn-primary" bind-event-click="$(#viewRoot).triggerHandler('manage')">
       <span class="fas fa-wrench"></span> Manage
     </button>

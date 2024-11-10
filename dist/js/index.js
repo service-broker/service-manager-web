@@ -67,9 +67,13 @@ function loadServiceList() {
 
 function login(params) {
   sb = new ServiceBroker(params.serviceBrokerUrl, logger);
-  request("clientLogin", {password: params.password}, onLogin);
-  sb.setHandler("service-manager-client", onServerRequest);
-  sb.setHandler("tap-client", req => console.log("⚡", ...JSON.parse(req.payload)))
+  if (params.password) {
+    request("clientLogin", {password: params.password}, onLogin);
+    sb.setHandler("service-manager-client", onServerRequest);
+    sb.setHandler("tap-client", req => console.log("⚡", ...JSON.parse(req.payload)))
+  } else {
+    state.page = "ServiceList"
+  }
 }
 
 function onLogin(res) {

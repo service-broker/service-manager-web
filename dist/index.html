@@ -40,6 +40,7 @@
     <div bind-view="ServiceList"
       bind-param-services="#state.serviceList.services"
       bind-param-topics="#state.serviceList.topics"
+      bind-param-can-manage="#state.sites != null"
       bind-statement-1="$(thisElem).toggle(#state.page=='ServiceList')"
       bind-event-manage="#state.page='SiteList'"
       bind-event-select-service="#state.page='ServiceListDetails'; #state.serviceList.selectedIndex=event.data;"
