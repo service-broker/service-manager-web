@@ -100,6 +100,10 @@ function updateEnums() {
       .filter(function(entry) {return entry[1]})
       .map(function(entry) {return entry[0]})
       .sort()
+    site.tunnelPorts = Object.entries(site.tunnels)
+      .filter(entry => entry[1])
+      .map(entry => entry[0])
+      .sort()
   })
   state.topicNames = Object.entries(state.topics)
     .filter(function(entry) {return entry[1]})
@@ -275,4 +279,14 @@ async function tapService({endpointId, secret}) {
   catch (err) {
     state.error = err
   }
+}
+
+function addTunnel(tunnelInfo) {
+  request("addTunnel", Object.assign({siteName: state.siteName}, tunnelInfo), res => {
+    state.page = "Tunnels"
+  })
+}
+
+function removeTunnel(fromPort) {
+  request("removeTunnel", {siteName: state.siteName, fromPort})
 }

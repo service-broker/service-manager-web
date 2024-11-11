@@ -13,6 +13,8 @@ function Breadcrumb() {
     TopicSubscriptions: "ServiceList",
     AddTopic: "TopicSubscriptions",
     ViewTopic: "TopicSubscriptions",
+    Tunnels: "SiteDetails",
+    AddTunnel: "Tunnels",
   };
   this.show = function(elem, targetPage, currentPage) {
     var tmp = currentPage;
@@ -209,4 +211,28 @@ function ModalSpinner() {
 
 function CommandOutput() {
   this.theme = null;
+}
+
+
+function Tunnels() {
+}
+
+
+function AddTunnel(viewRoot) {
+  this.submit = function(form) {
+    try {
+      const fromPort = Number(form.fromPort.value)
+      $(viewRoot).triggerHandler('submit', {
+        fromPort: form.tunnelType.value == "reverse" ? -fromPort : fromPort,
+        toHost: form.toHost.value,
+        toPort: Number(form.toPort.value)
+      })
+    }
+    catch (err) {
+      $(viewRoot).triggerHandler('error', err)
+    }
+  }
+  this.cancel = function() {
+    $(viewRoot).triggerHandler('cancel')
+  }
 }

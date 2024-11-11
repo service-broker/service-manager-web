@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>Service Manager</title>
 
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.6.0/css/all.css" crossorigin="anonymous">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
   <link rel="stylesheet" href="css/components.css">
 
@@ -63,6 +63,7 @@
       bind-statement-1="$(thisElem).toggle(#state.page=='SiteDetails')"
       bind-event-deploy-service="#state.page='DeployService'"
       bind-event-select-service="#state.page='ServiceDetails'; #state.serviceName=event.data;"
+      bind-event-manage-tunnels="#state.page='Tunnels'"
       bind-event-remove-site="if (confirm('Are you sure?')) this.removeSite()"></div>
     <div bind-view="ServiceDetails"
       bind-param-service="#state.sites[#state.siteName].services[#state.serviceName]"
@@ -122,6 +123,17 @@
       bind-event-cancel="#state.page='TopicSubscriptions'"></div>
     <div bind-view="ModalSpinner"
       bind-statement-1="$(thisElem).toggle(!!#state.progress)"></div>
+    <div bind-view="Tunnels"
+      bind-param-site="#state.sites[#state.siteName]"
+      bind-statement-1="$(thisElem).toggle(#state.page=='Tunnels')"
+      bind-event-add-tunnel="#state.page='AddTunnel'"
+      bind-event-remove-tunnel="if (confirm('Are you sure?')) this.removeTunnel(event.data)"></div>
+    <div bind-view="AddTunnel"
+      bind-statement-1="$(thisElem).toggle(#state.page=='AddTunnel')"
+      bind-event-submit="this.addTunnel(event.data)"
+      bind-event-error="#state.error=event.data"
+      bind-event-cancel="#state.page='Tunnels'"></div>
+
   </div>
 </body>
 </html>

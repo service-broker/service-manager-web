@@ -21,7 +21,7 @@
   <li class="breadcrumb-item"
     bind-statement-1="this.show(thisElem, 'AddSite', #currentPage)">Add Site</li>
   <li class="breadcrumb-item"
-    bind-statement-1="this.show(thisElem, 'AddService', #currentPage)">Add Provider</li>
+    bind-statement-1="this.show(thisElem, 'DeployService', #currentPage)">Deploy Provider</li>
   <li class="breadcrumb-item"
     bind-statement-1="this.show(thisElem, 'EditServiceConf', #currentPage)">Config</li>
   <li class="breadcrumb-item"
@@ -33,6 +33,11 @@
     bind-statement-1="this.show(thisElem, 'AddTopic', #currentPage)">Add Topic</li>
   <li class="breadcrumb-item"
     bind-statement-1="this.show(thisElem, 'ViewTopic', #currentPage)">{{#topicName}}</li>
+  <li class="breadcrumb-item"
+    bind-statement-1="this.show(thisElem, 'Tunnels', #currentPage)"
+    bind-event-click="$(#viewRoot).triggerHandler('navigate', 'Tunnels')">Tunnels</li>
+  <li class="breadcrumb-item"
+    bind-statement-1="this.show(thisElem, 'AddTunnel', #currentPage)">Add Tunnel</li>
 </ol>
 
 
@@ -227,6 +232,9 @@
   <div class="controls">
     <button type="button" class="btn btn-secondary" bind-event-click="$(#viewRoot).triggerHandler('deploy-service')">
       <span class="fas fa-plus"></span> Deploy Provider
+    </button>
+    <button type="button" class="btn btn-secondary" bind-event-click="$(#viewRoot).triggerHandler('manage-tunnels')">
+      <span class="fas fa-wave-square"></span> Tunnels
     </button>
     <button type="button" class="btn btn-secondary" bind-event-click="$(#viewRoot).triggerHandler('remove-site')">
       <span class="fas fa-trash-alt"></span> Remove Site
@@ -528,4 +536,69 @@
     bind-statement-2="#tabs[#i].content; thisElem.scrollTop=thisElem.scrollHeight;">
     <pre class="card-text">{{#tabs[#i].content}}</pre>
   </div>
+</div>
+
+
+<div data-class="Tunnels" class="tunnels"
+  bind-var-view-root="thisElem">
+  <div class="controls">
+    <button type="button" class="btn btn-secondary"
+      bind-event-click="$(#viewRoot).triggerHandler('add-tunnel')">
+      <span class="fas fa-plus"></span> Add Tunnel
+    </button>
+  </div>
+  <table class="table">
+    <thead class="thead-dark">
+      <tr>
+        <th>Type</th>
+        <th>From port</th>
+        <th>To host</th>
+        <th>To port</th>
+        <th style="width: 1%"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr bind-repeater-i="#site.tunnelPorts.length"
+        bind-var-from-port="Number(#site.tunnelPorts[#i])">
+        <td>{{#fromPort &lt; 0 ? "Reverse" : "Forward"}}</td>
+        <td>{{Math.abs(#fromPort)}}</td>
+        <td>{{#site.tunnels[#fromPort].toHost}}</td>
+        <td>{{#site.tunnels[#fromPort].toPort}}</td>
+        <td>
+          <button type="button" class="btn btn-secondary btn-sm"
+            bind-event-click="$(#viewRoot).triggerHandler('remove-tunnel', #fromPort)">
+            <span class="fas fa-times"></span>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<div data-class="AddTunnel" class="add-tunnel">
+  <form bind-event-submit="this.submit(thisElem); return false;">
+    <div class="form-group">
+      <label>Type</label>
+      <select class="form-control" name="tunnelType">
+        <option value="reverse">Reverse</option>
+        <option value="forward">Forward</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>From port</label>
+      <input type="number" class="form-control" name="fromPort" required>
+    </div>
+    <div class="form-group">
+      <label>To host</label>
+      <input type="text" class="form-control" name="toHost" required>
+    </div>
+    <div class="form-group">
+      <label>To port</label>
+      <input type="number" class="form-control" name="toPort" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="button" class="btn"
+      bind-event-click="this.cancel()">Cancel</button>
+  </form>
 </div>
