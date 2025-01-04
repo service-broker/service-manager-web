@@ -76,7 +76,6 @@ function login(params) {
   if (params.password) {
     request("clientLogin", {password: params.password}, onLogin);
     sb.setHandler("service-manager-client", onServerRequest);
-    sb.setHandler("tap-client", req => console.log("⚡", ...JSON.parse(req.payload)))
   } else {
     state.page = "ServiceList"
   }
@@ -261,23 +260,6 @@ function subscribeTopic(enable) {
     request("unsubscribeTopic", null, function() {
       state.topicHistory = null;
     })
-  }
-}
-
-async function tapService({endpointId, secret}) {
-  const tags = prompt("Enter tags to intercept (empty to disable)")
-  if (tags != null)
-  try {
-    await sb.requestTo(endpointId, {name: "service-manager-client"}, {
-      header: {
-        method: "tap",
-        secret,
-        tags: tags.split(",").map(x => x.trim()).filter(x => x)
-      }
-    })
-  }
-  catch (err) {
-    state.error = err
   }
 }
 

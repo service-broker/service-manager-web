@@ -78,7 +78,6 @@
       bind-event-update-service="this.updateService()"
       bind-event-edit-service-conf="this.editServiceConf()"
       bind-event-view-logs="this.viewServiceLogs()"
-      bind-event-tap-service="this.tapService(event.data)"
       bind-event-undeploy-service="if (confirm('Are you sure?')) this.undeployService()"></div>
     <div bind-view="AddSite"
       bind-statement-1="$(thisElem).toggle(#state.page=='AddSite')"

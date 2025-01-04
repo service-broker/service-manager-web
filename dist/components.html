@@ -313,11 +313,6 @@
       bind-event-click="$(#viewRoot).triggerHandler('undeploy-service')">
       <span class="fas fa-trash-alt"></span> Undeploy
     </button>
-    <button type="button" class="btn btn-secondary"
-      bind-statement-1="$(thisElem).toggle(#service.status == 'STARTED')"
-      bind-event-click="$(#viewRoot).triggerHandler('tap-service', {endpointId: #service.endpointId, secret: #service.deploymentSecret})">
-      <span class="fas fa-bolt"></span> Tap
-    </button>
   </div>
   <div bind-view="CommandOutput"
     bind-param-tabs="[{title:'stdout', content:#commandOutput.stdout}, {title:'stderr', content:#commandOutput.stderr}]"
